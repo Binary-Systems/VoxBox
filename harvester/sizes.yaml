@@ -1,0 +1,17 @@
+# VoxBox Harvester size profiles (reference)
+profiles:
+  lab:
+    vcpus: 2
+    memory: 2Gi
+    disk: 20Gi
+    notes: Minimum FreePBX-ish; Asterisk compile will be slow / may OOM.
+  recommended:
+    vcpus: 4
+    memory: 4Gi
+    disk: 40Gi
+    notes: Default in vm-voxbox-from-secret.yaml — comfortable firstboot compile + runtime.
+  production:
+    vcpus: 4
+    memory: 8Gi
+    disk: 80Gi
+    notes: More concurrent calls, recordings, PROTEL builds.

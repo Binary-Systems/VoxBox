@@ -1,0 +1,46 @@
+#!/bin/bash
+
+# Special thanks to @kenn10 for all his work on this script.
+
+echo "This utility stops Asterisk and upgrades it to latest Asterisk 23."
+read -p "Press Enter to proceed at your own risk or Ctrl-C to abort..."
+#echo "Upgrading FreePBX 15 modules to avoid potential disaster..."
+#fwconsole ma upgradeall
+#fwconsole reload
+#/root/sig-fix
+#/root/sig-fix
+fwconsole stop
+echo "Beginning Asterisk 23 install process..."
+cd /usr/src
+rm -rf /usr/lib/asterisk
+rm -rf /usr/lib64/asterisk
+rm -rf asterisk*
+touch /etc/asterisk/stir_shaken.conf
+wget http://downloads.asterisk.org/pub/telephony/asterisk/asterisk-23-current.tar.gz
+tar zxvf asterisk-23*
+rm -f asterisk-23*.tar.gz
+cd asterisk-23*
+contrib/scripts/get_mp3_source.sh
+contrib/scripts/install_prereq install
+make distclean
+wget https://gitea.binary-systems.com/binary-systems.com/VoxBox/raw/branch/main/mirror/menuselect-voxbox2025.tar.gz
+tar zxvf menuselect*.tar.gz
+CFLAGS='-DENABLE_SRTP_AES_256 -DENABLE_SRTP_AES_GCM' 
+./configure --with-pjproject-bundled --with-jansson-bundled
+make menuselect.makeopts
+ menuselect/menuselect --enable-category MENUSELECT_ADDONS menuselect.makeopts
+ menuselect/menuselect --enable-category MENUSELECT_CODECS menuselect.makeopts
+ menuselect/menuselect --disable-category MENUSELECT_TESTS menuselect.makeopts
+ menuselect/menuselect --enable codec_opus menuselect.makeopts
+ menuselect/menuselect --enable codec_silk menuselect.makeopts
+ menuselect/menuselect --enable codec_siren7 menuselect.makeopts
+ menuselect/menuselect --enable codec_siren14 menuselect.makeopts
+ menuselect/menuselect --enable codec_g729a menuselect.makeopts
+make menuselect.makeopts
+make menuselect
+read -p "Press Enter to proceed at your own risk or Ctrl-C to abort..."
+make && make install && make config
+ldconfig
+fwconsole restart
+read -p "All done. Press Enter key to load pbxstatus..."
+pbxstatus

@@ -1,0 +1,20 @@
+<module>
+	<rawname>voxbox</rawname>
+	<name>VoxBox</name>
+	<repo>standard</repo>
+	<version>17.0.2</version>
+	<publisher>Binary Systems, Inc.</publisher>
+	<license>AGPLv3+</license>
+	<licenselink>http://www.gnu.org/licenses/agpl-3.0.txt</licenselink>
+	<candisable>no</candisable>
+	<canuninstall>no</canuninstall>
+	<category>Settings</category>
+	<description>VoxBox branding and configuration for the administration screens. The cube, theme, login, menu, and footer ship in this module and load with FreePBX.</description>
+	<changelog>
+		*17.0.2* Night-mode Binary Systems SI footer logo.
+		*17.0.1* VoxBox branding module. Publisher is Binary Systems, Inc. The cube, theme, login, menu, and footer ship in this module. IncrediblePBX cannot be installed. The module carries a local signature.
+	</changelog>
+	<supported>
+		<version>17.0</version>
+	</supported>
+</module>

@@ -1,0 +1,82 @@
+#!/bin/bash
+
+if [ -e "/etc/pbx/.postfix" ]; then
+ echo "Gmail SmartHost with Postfix is already installed."
+ exit 1
+fi
+
+clear
+echo "This script installs Postfix to use your Gmail account"
+echo "as an SMTP SmartHost relay which is required by most providers."
+echo "You obviously need a Gmail account to begin."
+echo "WARNING: You must use an App Password instead of your regular"
+echo "Gmail password. To obtain an APP password, read this article:"
+echo "https://support.google.com/accounts/answer/185833?hl=en"
+echo " "
+
+echo -n "Enter your full Gmail account name with @gmail.com: "
+read acctname
+echo " "
+echo -n "Enter your Gmail APP password: "
+read acctpw
+echo " "
+echo "Account name: $acctname"
+echo "Account pass: $acctpw"
+echo " "
+read -p "To proceed, press ENTER or press Ctrl-C to abort."
+echo " "
+echo "Installing required components for Postfix..."
+echo " "
+apt-get install expect -y
+apt-get install mailutils -y
+apt-get install libsasl2-modules -y
+echo '#!/usr/bin/expect -f' > /tmp/postfix-setup
+echo 'spawn apt-get install postfix -y' >> /tmp/postfix-setup
+echo 'expect "EXIT"' >> /tmp/postfix-setup
+echo 'sleep 1' >> /tmp/postfix-setup
+echo 'send "\r"' >> /tmp/postfix-setup
+echo 'expect "<Ok"' >> /tmp/postfix-setup
+echo 'sleep 1' >> /tmp/postfix-setup
+echo 'send "\r"' >> /tmp/postfix-setup
+echo 'expect "Internet Site"' >> /tmp/postfix-setup
+echo 'sleep 1' >> /tmp/postfix-setup
+echo 'send "\r"' >> /tmp/postfix-setup
+echo 'expect "example"' >> /tmp/postfix-setup
+echo 'sleep 1' >> /tmp/postfix-setup
+echo 'send "\r"' >> /tmp/postfix-setup
+chmod +x /tmp/postfix-setup
+/tmp/postfix-setup
+sleep 10
+cd /etc
+wget https://gitea.binary-systems.com/binary-systems.com/VoxBox/raw/branch/main/mirror/postfix-base.tar.gz
+tar zxvf postfix-base.tar.gz
+rm -f postfix-base.tar.gz
+cd /etc/postfix
+echo "noreply.voxbox.local" > /etc/mailname
+sed -i "s|yourname@gmail.com|'$acctname'|" /etc/postfix/sasl_passwd
+sed -i "s|yourpassword|'$acctpw'|" /etc/postfix/sasl_passwd
+sed -i "s|'||g" /etc/postfix/sasl_passwd
+wait
+sleep 15
+chmod 600 /etc/postfix/sasl_passwd
+postmap /etc/postfix/sasl_passwd
+
+sed -i 's|root|/dev/null|' /etc/aliases
+newaliases
+
+/etc/init.d/postfix restart
+
+
+postfix stop
+postconf maillog_file=/var/log/postfix.log
+postfix start
+
+systemctl enable postfix
+
+sed -i 's|sendmail|postfix|' /usr/local/sbin/pbxstatus
+sed -i 's|SendMail| Postfix|' /usr/local/sbin/pbxstatus
+
+
+touch /etc/pbx/.postfix
+
+# the end

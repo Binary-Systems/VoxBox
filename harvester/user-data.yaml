@@ -1,0 +1,85 @@
+#cloud-config
+# VoxBox 2026 — Debian 13 cloud image first-boot for Harvester
+# Replace ssh_authorized_keys and set VOXBOX_GIT_TOKEN (private repo clone).
+
+hostname: voxbox
+manage_etc_hosts: true
+fqdn: voxbox.local
+
+users:
+  - name: voxbox
+    gecos: VoxBox Admin
+    groups: [sudo, adm]
+    shell: /bin/bash
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    lock_passwd: true
+    ssh_authorized_keys:
+      - REPLACE_WITH_YOUR_SSH_PUBLIC_KEY
+
+package_update: true
+package_upgrade: true
+packages:
+  - qemu-guest-agent
+  - git
+  - curl
+  - ca-certificates
+  - openssh-server
+  - sudo
+
+write_files:
+  - path: /etc/voxbox/install.env
+    permissions: "0600"
+    owner: root:root
+    content: |
+      # Copied into the installer environment by runcmd
+      VOXBOX_NONINTERACTIVE=1
+      VOXBOX_ASTERISK=22
+      # Gitea token (repo read) — required to clone binary-systems.com/VoxBox
+      VOXBOX_GIT_TOKEN=REPLACE_WITH_GITEA_TOKEN
+      VOXBOX_REPO=https://gitea.binary-systems.com/binary-systems.com/VoxBox.git
+      VOXBOX_REF=main
+      VOXBOX_HOME=/opt/voxbox
+
+  - path: /usr/local/sbin/voxbox-firstboot.sh
+    permissions: "0755"
+    owner: root:root
+    content: |
+      #!/bin/bash
+      set -euo pipefail
+      LOG=/var/log/voxbox-firstboot.log
+      exec > >(tee -a "$LOG") 2>&1
+      echo "=== VoxBox firstboot $(date -Is) ==="
+      # shellcheck disable=SC1091
+      source /etc/voxbox/install.env
+      export VOXBOX_NONINTERACTIVE VOXBOX_ASTERISK VOXBOX_GIT_TOKEN
+      if [[ -z "${VOXBOX_GIT_TOKEN}" || "${VOXBOX_GIT_TOKEN}" == REPLACE_WITH_GITEA_TOKEN ]]; then
+        echo "ERROR: set VOXBOX_GIT_TOKEN in /etc/voxbox/install.env (or cloud-init secret)"
+        exit 1
+      fi
+      mkdir -p "$(dirname "$VOXBOX_HOME")"
+      if [[ ! -d "$VOXBOX_HOME/.git" ]]; then
+        git clone --depth 1 --branch "${VOXBOX_REF}" \
+          "https://oauth2:${VOXBOX_GIT_TOKEN}@gitea.binary-systems.com/binary-systems.com/VoxBox.git" \
+          "$VOXBOX_HOME"
+      else
+        git -C "$VOXBOX_HOME" fetch --depth 1 origin "${VOXBOX_REF}"
+        git -C "$VOXBOX_HOME" checkout -B "${VOXBOX_REF}" "origin/${VOXBOX_REF}"
+      fi
+      # Strip token from remote after clone
+      git -C "$VOXBOX_HOME" remote set-url origin "$VOXBOX_REPO"
+      cd "$VOXBOX_HOME"
+      chmod +x VoxBox2026.sh
+      # Installer expects root + Debian 13; long-running Asterisk/FreePBX build
+      export DEBIAN_FRONTEND=noninteractive
+      ./VoxBox2026.sh
+      touch /var/lib/voxbox-firstboot.done
+      echo "=== VoxBox firstboot finished $(date -Is) ==="
+
+runcmd:
+  - systemctl enable --now qemu-guest-agent
+  - systemctl enable --now ssh
+  - [ bash, -c, "if [ ! -f /var/lib/voxbox-firstboot.done ]; then nohup /usr/local/sbin/voxbox-firstboot.sh >/var/log/voxbox-firstboot.nohup.out 2>&1 & fi" ]
+
+final_message: |
+  VoxBox cloud-init finished. Installer may still be running in background —
+  watch /var/log/voxbox-firstboot.log. FreePBX and SIP ports after reboot.

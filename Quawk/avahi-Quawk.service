@@ -1,0 +1,14 @@
+<?xml version="1.0" standalone='no'?><!--*-nxml-*-->
+<!DOCTYPE service-group SYSTEM "avahi-service.dtd">
+<!-- Advertise VoxBox Quawk IAX relay — service type _Quawk._udp (not _iax._udp) -->
+<service-group>
+  <name replace-wildcards="yes">VoxBox Quawk IAX on %h</name>
+  <service>
+    <type>_Quawk._udp</type>
+    <port>4569</port>
+    <txt-record>proto=iax2</txt-record>
+    <txt-record>product=VoxBox</txt-record>
+    <txt-record>version=2026</txt-record>
+    <txt-record>requirecalltoken=yes</txt-record>
+  </service>
+</service-group>

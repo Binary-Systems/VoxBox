@@ -1,0 +1,12 @@
+apiVersion: harvesterhci.io/v1beta1
+kind: VirtualMachineImage
+metadata:
+  name: debian-13-generic-amd64
+  namespace: default
+  annotations:
+    harvesterhci.io/storageClassName: harvester-longhorn
+spec:
+  displayName: debian-13-generic-amd64
+  sourceType: download
+  # Official Debian 13 (trixie) generic cloud image — pin a dated build for reproducibility if desired
+  url: https://cloud.debian.org/images/cloud/trixie/latest/debian-13-generic-amd64.qcow2
