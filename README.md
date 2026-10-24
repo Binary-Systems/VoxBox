@@ -140,6 +140,6 @@ Asterisk source and the FreePBX framework tarball still come from their upstream
 
 ## Lineage
 
-`VoxBox2026.sh`, `VoxBox2026-RasPi.sh`, and `VoxBox2026-EL.sh` are Binary Systems installers. Portions of the installer lineage are Copyright Ward Mundy & Associates LLC. Keep the GPL notices and third-party copyrights (Digium, Sangoma, and contributors).
+`VoxBox2026.sh`, `VoxBox2026-RasPi.sh`, and `VoxBox2026-EL.sh` are Binary Systems installers. Portions of the installer lineage are Copyright Ward Mundy & Associates LLC.  GPL notices and third-party copyrights (Digium, Sangoma, and contributors).
 
 Copyright © 2007–2026 Binary Systems, Inc.
