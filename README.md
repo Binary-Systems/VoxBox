@@ -59,14 +59,6 @@ The full procedure — base OS, Raspberry Pi, Harvester, first boot, firewall, a
 
 Phone users: feature codes, voicemail, Polycom sets (including the SoundPoint IP 670, VVX 500, and VVX 1500), Quawk, and Zoiper are in the [VoxBox End User Manual](docs/END-USER-MANUAL.md). Quawk’s steps are before Zoiper.
 
-## Private site configuration
-
-Site-specific configuration is not stored in this repository. It lives in two private Gitea repositories. A clone from Gitea checks them out as submodules:
-
-| Directory | Repository |
-|-----------|------------|
-| `BSI-VoxBox/` | `binary-systems.com/BSI-VoxBox` |
-| `Client-VoxBox/` | `binary-systems.com/Client-VoxBox` |
 
 `BSI-VoxBox` is for Binary Systems configuration. `Client-VoxBox` is for other clients. Both stay on Gitea. Do not add a GitHub remote to either one, and do not enable a Gitea push mirror.
 
